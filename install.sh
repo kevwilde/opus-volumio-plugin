@@ -63,11 +63,20 @@ echo "Dependencies installed"
 echo "Creating Kiosk Data dir"
 mkdir /data/volumiokiosk
 
+echo "Fetching Opus App"
+git clone git@github.com:kevwilde/opus-app.git /data/volumiokiosk/opus-app
+cd /data/volumiokiosk/opus-app
+npm install
+ember build
+cd -
+
+
 echo "  Creating chromium kiosk start script"
 echo "#!/bin/bash
 xset +dpms
 xset s blank
 xset 0 0 120
+/volumio/app/plugins/miscellanea/serve-opus/bin/www &
 openbox-session &
 while true; do
   /usr/bin/chromium-browser \\
@@ -82,7 +91,7 @@ while true; do
     --disable-translate \\
     --user-data-dir='/data/volumiokiosk' \
 	--no-sandbox \
-    http://localhost:3000
+    http://localhost:4001
 done" > /opt/volumiokiosk.sh
 /bin/chmod +x /opt/volumiokiosk.sh
 
