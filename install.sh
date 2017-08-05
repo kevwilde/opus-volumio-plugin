@@ -64,19 +64,21 @@ echo "Creating Kiosk Data dir"
 mkdir /data/volumiokiosk
 
 echo "Fetching Opus App"
-git clone git@github.com:kevwilde/opus-app.git /data/volumiokiosk/opus-app
+sudo git clone https://github.com/kevwilde/opus-app.git /data/volumiokiosk/opus-app
 cd /data/volumiokiosk/opus-app
-npm install
-ember build
+sudo npm install
+sudo node_modules/bower/bin/bower --allow-root install
+sudo node_modules/ember-cli/bin/ember build
 cd -
 
+sudo chmod +x /data/plugins/miscellanea/touch_display/serve-opus/bin/www
 
 echo "  Creating chromium kiosk start script"
 echo "#!/bin/bash
 xset +dpms
 xset s blank
 xset 0 0 120
-/volumio/app/plugins/miscellanea/serve-opus/bin/www &
+/data/plugins/miscellanea/touch_display/serve-opus/bin/www &
 openbox-session &
 while true; do
   /usr/bin/chromium-browser \\
