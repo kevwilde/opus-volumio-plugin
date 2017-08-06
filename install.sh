@@ -63,14 +63,7 @@ echo "Dependencies installed"
 echo "Creating Kiosk Data dir"
 mkdir /data/volumiokiosk
 
-echo "Fetching Opus App"
-sudo git clone https://github.com/kevwilde/opus-app.git /data/volumiokiosk/opus-app
-cd /data/volumiokiosk/opus-app
-sudo npm install
-sudo node_modules/bower/bin/bower --allow-root install
-sudo node_modules/ember-cli/bin/ember build
-cd -
-
+echo "Preparing Opus App"
 sudo chmod +x /data/plugins/miscellanea/touch_display/serve-opus/bin/www
 
 echo "  Creating chromium kiosk start script"
@@ -79,6 +72,7 @@ xset +dpms
 xset s blank
 xset 0 0 120
 /data/plugins/miscellanea/touch_display/serve-opus/bin/www &
+sleep 5s
 openbox-session &
 while true; do
   /usr/bin/chromium-browser \\
@@ -91,11 +85,18 @@ while true; do
     --disable-infobars \\
     --disable-session-crashed-bubble \\
     --disable-translate \\
-    --user-data-dir='/data/volumiokiosk' \
-	--no-sandbox \
+    --user-data-dir='/data/volumiokiosk' \\
+	  --no-sandbox \\
     http://localhost:4001
 done" > /opt/volumiokiosk.sh
 /bin/chmod +x /opt/volumiokiosk.sh
+
+echo "Updating X Server to hide mouse pointer"
+echo "
+#!/bin/sh
+
+exec /usr/bin/X -nocursor -nolisten tcp \"\$@\"
+" > /etc/X11/xinit/xserverrc
 
 echo "Creating Systemd Unit for Kiosk"
 echo "[Unit]
@@ -117,9 +118,6 @@ WantedBy=multi-user.target
 
 echo "  Allowing volumio to start an xsession"
 /bin/sed -i "s/allowed_users=console/allowed_users=anybody/" /etc/X11/Xwrapper.config
-
-echo "Disabling Kiosk Service"
-
 
 #requred to end the plugin install
 echo "plugininstallend"
